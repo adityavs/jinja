@@ -947,6 +947,17 @@ Example::
 
 The `navigation` variable then contains the navigation HTML source.
 
+.. versionchanged:: 2.10
+
+Starting with Jinja 2.10, the block assignment supports filters.
+
+Example::
+
+    {% set reply | wordwrap %}
+        You wrote:
+        {{ message }}
+    {% endset %}
+
 
 .. _extends:
 
@@ -1298,7 +1309,7 @@ The general syntax is ``<do something> if <something is true> else <do
 something else>``.
 
 The `else` part is optional.  If not provided, the else block implicitly
-evaluates into an undefined object::
+evaluates into an undefined object:
 
 .. sourcecode:: jinja
 
