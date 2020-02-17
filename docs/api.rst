@@ -2,16 +2,17 @@ API
 ===
 
 .. module:: jinja2
-    :synopsis: public Jinja2 API
+    :noindex:
+    :synopsis: public Jinja API
 
-This document describes the API to Jinja2 and not the template language.  It
+This document describes the API to Jinja and not the template language.  It
 will be most useful as reference to those implementing the template interface
-to the application and not those who are creating Jinja2 templates.
+to the application and not those who are creating Jinja templates.
 
 Basics
 ------
 
-Jinja2 uses a central object called the template :class:`Environment`.
+Jinja uses a central object called the template :class:`Environment`.
 Instances of this class are used to store the configuration and global objects,
 and are used to load templates from the file system or other locations.
 Even if you are creating templates from strings by using the constructor of
@@ -19,11 +20,11 @@ Even if you are creating templates from strings by using the constructor of
 albeit a shared one.
 
 Most applications will create one :class:`Environment` object on application
-initialization and use that to load templates.  In some cases however, it's 
+initialization and use that to load templates.  In some cases however, it's
 useful to have multiple environments side by side, if different configurations
 are in use.
 
-The simplest way to configure Jinja2 to load templates for your application
+The simplest way to configure Jinja to load templates for your application
 looks roughly like this::
 
     from jinja2 import Environment, PackageLoader, select_autoescape
@@ -46,7 +47,7 @@ To load a template from this environment you just have to call the
 
 To render it with some variables, just call the :meth:`render` method::
 
-    print template.render(the='variables', go='here')
+    print(template.render(the='variables', go='here'))
 
 Using a template loader rather than passing strings to :class:`Template`
 or :meth:`Environment.from_string` has multiple advantages.  Besides being
@@ -54,74 +55,17 @@ a lot easier to use it also enables template inheritance.
 
 .. admonition:: Notes on Autoescaping
 
-   In future versions of Jinja2 we might enable autoescaping by default
+   In future versions of Jinja we might enable autoescaping by default
    for security reasons.  As such you are encouraged to explicitly
    configure autoescaping now instead of relying on the default.
 
-
-Unicode
--------
-
-Jinja2 is using Unicode internally which means that you have to pass Unicode
-objects to the render function or bytestrings that only consist of ASCII
-characters.  Additionally newlines are normalized to one end of line
-sequence which is per default UNIX style (``\n``).
-
-Python 2.x supports two ways of representing string objects.  One is the
-`str` type and the other is the `unicode` type, both of which extend a type
-called `basestring`.  Unfortunately the default is `str` which should not
-be used to store text based information unless only ASCII characters are
-used.  With Python 2.6 it is possible to make `unicode` the default on a per
-module level and with Python 3 it will be the default.
-
-To explicitly use a Unicode string you have to prefix the string literal
-with a `u`: ``u'Hänsel und Gretel sagen Hallo'``.  That way Python will
-store the string as Unicode by decoding the string with the character
-encoding from the current Python module.  If no encoding is specified this
-defaults to 'ASCII' which means that you can't use any non ASCII identifier.
-
-To set a better module encoding add the following comment to the first or
-second line of the Python module using the Unicode literal::
-
-    # -*- coding: utf-8 -*-
-
-We recommend utf-8 as Encoding for Python modules and templates as it's
-possible to represent every Unicode character in utf-8 and because it's
-backwards compatible to ASCII.  For Jinja2 the default encoding of templates
-is assumed to be utf-8.
-
-It is not possible to use Jinja2 to process non-Unicode data.  The reason
-for this is that Jinja2 uses Unicode already on the language level.  For
-example Jinja2 treats the non-breaking space as valid whitespace inside
-expressions which requires knowledge of the encoding or operating on an
-Unicode string.
-
-For more details about Unicode in Python have a look at the excellent
-`Unicode documentation`_.
-
-Another important thing is how Jinja2 is handling string literals in
-templates.  A naive implementation would be using Unicode strings for
-all string literals but it turned out in the past that this is problematic
-as some libraries are typechecking against `str` explicitly.  For example
-`datetime.strftime` does not accept Unicode arguments.  To not break it
-completely Jinja2 is returning `str` for strings that fit into ASCII and
-for everything else `unicode`:
-
->>> m = Template(u"{% set a, b = 'foo', 'föö' %}").module
->>> m.a
-'foo'
->>> m.b
-u'f\xf6\xf6'
-
-
-.. _Unicode documentation: https://docs.python.org/dev/howto/unicode.html
 
 High Level API
 --------------
 
 The high-level API is the API you will use in the application to load and
-render Jinja2 templates.  The :ref:`low-level-api` on the other side is only
-useful if you want to dig deeper into Jinja2 or :ref:`develop extensions
+render Jinja templates.  The :ref:`low-level-api` on the other side is only
+useful if you want to dig deeper into Jinja or :ref:`develop extensions
 <jinja-extensions>`.
 
 .. autoclass:: Environment([options])
@@ -213,7 +157,7 @@ useful if you want to dig deeper into Jinja2 or :ref:`develop extensions
         For a more complex example you can provide a hint.  For example
         the :func:`first` filter creates an undefined object that way::
 
-            return environment.undefined('no first item, sequence was empty')            
+            return environment.undefined('no first item, sequence was empty')
 
         If it the `name` or `obj` is known (for example because an attribute
         was accessed) it should be passed to the undefined object, even if
@@ -259,7 +203,7 @@ Autoescaping
 
 .. versionchanged:: 2.4
 
-Jinja2 now comes with autoescaping support.  As of Jinja 2.9 the
+Jinja now comes with autoescaping support.  As of Jinja 2.9 the
 autoescape extension is removed and built-in.  However autoescaping is
 not yet enabled by default though this will most likely change in the
 future.  It's recommended to configure a sensible default for
@@ -299,15 +243,13 @@ the `autoescape` block (see :ref:`autoescape-overrides`).
 Notes on Identifiers
 --------------------
 
-Jinja2 uses the regular Python 2.x naming rules.  Valid identifiers have to
-match ``[a-zA-Z_][a-zA-Z0-9_]*``.  As a matter of fact non ASCII characters
-are currently not allowed.  This limitation will probably go away as soon as
-unicode identifiers are fully specified for Python 3.
+Jinja uses Python naming rules. Valid identifiers can be any combination
+of characters accepted by Python.
 
 Filters and tests are looked up in separate namespaces and have slightly
 modified identifier syntax.  Filters and tests may contain dots to group
 filters and tests by topic.  For example it's perfectly valid to add a
-function into the filter dict and call it `to.unicode`.  The regular
+function into the filter dict and call it `to.str`.  The regular
 expression for filter and test identifiers is
 ``[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)*```.
 
@@ -322,15 +264,15 @@ unable to look up a name or access an attribute one of those objects is
 created and returned.  Some operations on undefined values are then allowed,
 others fail.
 
-The closest to regular Python behavior is the `StrictUndefined` which
+The closest to regular Python behavior is the :class:`StrictUndefined` which
 disallows all operations beside testing if it's an undefined object.
 
 .. autoclass:: jinja2.Undefined()
 
     .. attribute:: _undefined_hint
 
-        Either `None` or an unicode string with the error message for
-        the undefined object.
+        Either `None` or a string with the error message for the
+        undefined object.
 
     .. attribute:: _undefined_obj
 
@@ -353,6 +295,8 @@ disallows all operations beside testing if it's an undefined object.
         :attr:`_undefined_exception` with an error message generated
         from the undefined hints stored on the undefined object.
 
+.. autoclass:: jinja2.ChainableUndefined()
+
 .. autoclass:: jinja2.DebugUndefined()
 
 .. autoclass:: jinja2.StrictUndefined()
@@ -366,27 +310,32 @@ Undefined objects are created by calling :attr:`undefined`.
 
 .. admonition:: Implementation
 
-    :class:`Undefined` objects are implemented by overriding the special
-    `__underscore__` methods.  For example the default :class:`Undefined`
-    class implements `__unicode__` in a way that it returns an empty
-    string, however `__int__` and others still fail with an exception.  To
-    allow conversion to int by returning ``0`` you can implement your own::
+    :class:`Undefined` is implemented by overriding the special
+    ``__underscore__`` methods. For example the default
+    :class:`Undefined` class implements ``__str__`` to returns an empty
+    string, while ``__int__`` and others fail with an exception. To
+    allow conversion to int by returning ``0`` you can implement your
+    own subclass.
+
+    .. code-block:: python
 
         class NullUndefined(Undefined):
             def __int__(self):
                 return 0
+
             def __float__(self):
                 return 0.0
 
-    To disallow a method, just override it and raise
-    :attr:`~Undefined._undefined_exception`.  Because this is a very common
-    idom in undefined objects there is the helper method
-    :meth:`~Undefined._fail_with_undefined_error` that does the error raising
-    automatically.  Here a class that works like the regular :class:`Undefined`
-    but chokes on iteration::
+    To disallow a method, override it and raise
+    :attr:`~Undefined._undefined_exception`.  Because this is very
+    common there is the helper method
+    :meth:`~Undefined._fail_with_undefined_error` that raises the error
+    with the correct information. Here's a class that works like the
+    regular :class:`Undefined` but fails on iteration::
 
         class NonIterableUndefined(Undefined):
-            __iter__ = Undefined._fail_with_undefined_error
+            def __iter__(self):
+                self._fail_with_undefined_error()
 
 
 The Context
@@ -442,11 +391,11 @@ The Context
 .. admonition:: Implementation
 
     Context is immutable for the same reason Python's frame locals are
-    immutable inside functions.  Both Jinja2 and Python are not using the
+    immutable inside functions.  Both Jinja and Python are not using the
     context / frame locals as data storage for variables but only as primary
     data source.
 
-    When a template accesses a variable the template does not define, Jinja2
+    When a template accesses a variable the template does not define, Jinja
     looks up the variable in the context, after that the variable is treated
     as if it was defined in the template.
 
@@ -466,7 +415,7 @@ own loader, subclass :class:`BaseLoader` and override `get_source`.
 .. autoclass:: jinja2.BaseLoader
     :members: get_source, load
 
-Here a list of the builtin loaders Jinja2 provides:
+Here a list of the builtin loaders Jinja provides:
 
 .. autoclass:: jinja2.FileSystemLoader
 
@@ -528,7 +477,7 @@ Builtin bytecode caches:
 Async Support
 -------------
 
-Starting with version 2.9, Jinja2 also supports the Python `async` and
+Starting with version 2.9, Jinja also supports the Python `async` and
 `await` constructs.  As far as template designers go this feature is
 entirely opaque to them however as a developer you should be aware of how
 it's implemented as it influences what type of APIs you can safely expose
@@ -551,12 +500,12 @@ understand because it has some impact to what you are doing:
 
 Awaitable objects can be returned from functions in templates and any
 function call in a template will automatically await the result.  This
-means that you can let provide a method that asynchronously loads data
+means that you can provide a method that asynchronously loads data
 from a database if you so desire and from the template designer's point of
 view this is just another function they can call.  This means that the
 ``await`` you would normally issue in Python is implied.  However this
 only applies to function calls.  If an attribute for instance would be an
-avaitable object then this would not result in the expected behavior.
+awaitable object then this would not result in the expected behavior.
 
 Likewise iterations with a `for` loop support async iterators.
 
@@ -573,16 +522,6 @@ behave.  They can be configured with the
 Example::
 
     env.policies['urlize.rel'] = 'nofollow noopener'
-
-``compiler.ascii_str``:
-    This boolean controls on Python 2 if Jinja2 should store ASCII only
-    literals as bytestring instead of unicode strings.  This used to be
-    always enabled for Jinja versions below 2.9 and now can be changed.
-    Traditionally it was done this way since some APIs in Python 2 failed
-    badly for unicode strings (for instance the datetime strftime API).
-    Now however sometimes the inverse is true (for instance str.format).
-    If this is set to False then all strings are stored as unicode
-    internally.
 
 ``truncate.leeway``:
     Configures the leeway default for the `truncate` filter.  Leeway as
@@ -623,7 +562,7 @@ Utilities
 ---------
 
 These helper functions and classes are useful if you add custom filters or
-functions to a Jinja2 environment.
+functions to a Jinja environment.
 
 .. autofunction:: jinja2.environmentfilter
 
@@ -655,7 +594,7 @@ functions to a Jinja2 environment.
 
 .. admonition:: Note
 
-    The Jinja2 :class:`Markup` class is compatible with at least Pylons and
+    The Jinja :class:`Markup` class is compatible with at least Pylons and
     Genshi.  It's expected that more template engines and framework will pick
     up the `__html__` concept soon.
 
@@ -675,24 +614,20 @@ Exceptions
 
     .. attribute:: message
 
-        The error message as utf-8 bytestring.
+        The error message.
 
     .. attribute:: lineno
 
-        The line number where the error occurred
+        The line number where the error occurred.
 
     .. attribute:: name
 
-        The load name for the template as unicode string.
+        The load name for the template.
 
     .. attribute:: filename
 
-        The filename that loaded the template as bytestring in the encoding
-        of the file system (most likely utf-8 or mbcs on Windows systems).
-
-    The reason why the filename and error message are bytestrings and not
-    unicode strings is that Python 2.x is not using unicode for exceptions
-    and tracebacks as well as the compiler.  This will change with Python 3.
+        The filename that loaded the template in the encoding of the
+        file system (most likely utf-8, or mbcs on Windows systems).
 
 .. autoexception:: jinja2.TemplateRuntimeError
 
@@ -740,12 +675,14 @@ enabled::
     import re
     from jinja2 import evalcontextfilter, Markup, escape
 
-    _paragraph_re = re.compile(r'(?:\r\n|\r|\n){2,}')
+    _paragraph_re = re.compile(r"(?:\r\n|\r(?!\n)|\n){2,}")
 
     @evalcontextfilter
     def nl2br(eval_ctx, value):
-        result = u'\n\n'.join(u'<p>%s</p>' % p.replace('\n', Markup('<br>\n'))
-                              for p in _paragraph_re.split(escape(value)))
+        result = "\n\n".join(
+            f"<p>{p.replace('\n', Markup('<br>\n'))}</p>"
+            for p in _paragraph_re.split(escape(value))
+        )
         if eval_ctx.autoescape:
             result = Markup(result)
         return result
@@ -834,11 +771,11 @@ Here a simple test that checks if a variable is a prime number::
     def is_prime(n):
         if n == 2:
             return True
-        for i in xrange(2, int(math.ceil(math.sqrt(n))) + 1):
+        for i in range(2, int(math.ceil(math.sqrt(n))) + 1):
             if n % i == 0:
                 return False
         return True
-        
+
 
 You can register it on the template environment by updating the
 :attr:`~Environment.tests` dict on the environment::
@@ -893,7 +830,7 @@ don't recommend using any of those.
     that has to be created by :meth:`new_context` of the same template or
     a compatible template.  This render function is generated by the
     compiler from the template code and returns a generator that yields
-    unicode strings.
+    strings.
 
     If an exception in the template code happens the template engine will
     not rewrite the exception but pass through the original one.  As a
@@ -912,9 +849,9 @@ don't recommend using any of those.
 
 .. admonition:: Note
 
-    The low-level API is fragile.  Future Jinja2 versions will try not to
-    change it in a backwards incompatible way but modifications in the Jinja2
-    core may shine through.  For example if Jinja2 introduces a new AST node
+    The low-level API is fragile.  Future Jinja versions will try not to
+    change it in a backwards incompatible way but modifications in the Jinja
+    core may shine through.  For example if Jinja introduces a new AST node
     in later versions that may be returned by :meth:`~Environment.parse`.
 
 The Meta API
